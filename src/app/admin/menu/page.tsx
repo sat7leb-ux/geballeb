@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, Save, X, ChevronDown, ChevronUp, Search } from "lucide-react";
-import { MENU_ITEMS, type MenuItem } from "@/lib/menu-data";
-
-const STORAGE_KEY = "gebal_menu_items";
 
 const CUISINES = ["Lebanese", "Oriental", "Chinese", "Italian", "Sandwiches", "Drinks", "Alcoholic Beverages", "Chicha", "Desserts"];
 
@@ -20,75 +17,136 @@ const CATEGORIES: Record<string, string[]> = {
   Desserts: ["Lebanese Sweets", "Oriental Sweets", "Chinese Sweets", "Italian Sweets", "Ice Cream", "Pastries"],
 };
 
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  is_vegetarian: boolean;
+  is_vegan: boolean;
+  is_spicy: boolean;
+  is_featured: boolean;
+  cuisine_id: string;
+  category_id: string;
+  image?: string;
+  cuisines?: { name: string };
+  categories?: { name: string };
+}
+
+interface Cuisine {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  cuisine_id: string;
+}
+
 export default function AdminMenuPage() {
-  const [items, setItems] = useState<MenuItem[]>(MENU_ITEMS);
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [cuisines, setCuisines] = useState<Cuisine[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [editing, setEditing] = useState<MenuItem | "new" | null>(null);
   const [search, setSearch] = useState("");
   const [filterCuisine, setFilterCuisine] = useState("All");
   const [expandedCuisine, setExpandedCuisine] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch data from Supabase
   useEffect(() => {
     setMounted(true);
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setItems(parsed);
-        }
-      } catch {
-        // ignore parse errors
-      }
-    }
+    fetchMenuData();
   }, []);
 
-  const saveToStorage = (newItems: MenuItem[]) => {
-    if (mounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
-      setItems(newItems);
-      window.dispatchEvent(new Event("storage"));
+  const fetchMenuData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/menu?admin=true");
+      const data = await res.json();
+      if (data.menuItems) setItems(data.menuItems);
+      if (data.cuisines) setCuisines(data.cuisines);
+      if (data.categories) setCategories(data.categories);
+    } catch (error) {
+      console.error("Failed to fetch menu data:", error);
+    }
+    setLoading(false);
+  };
+
+  const getCuisineName = (cuisineId: string) => {
+    return cuisines.find(c => c.id === cuisineId)?.name || "";
+  };
+
+  const getCategoryName = (categoryId: string) => {
+    return categories.find(c => c.id === categoryId)?.name || "";
+  };
+
+  const getCuisineId = (name: string) => {
+    return cuisines.find(c => c.name === name)?.id || "";
+  };
+
+  const getCategoryId = (name: string, cuisineId: string) => {
+    return categories.find(c => c.name === name && c.cuisine_id === cuisineId)?.id || "";
+  };
+
+  const handleSave = async (item: any) => {
+    try {
+      if (editing === "new") {
+        const cuisineId = getCuisineId(item.cuisine);
+        const categoryId = getCategoryId(item.category, cuisineId);
+        const res = await fetch("/api/menu", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...item, cuisine_id: cuisineId, category_id: categoryId }),
+        });
+        if (!res.ok) throw new Error("Failed to create item");
+      } else {
+        const cuisineId = getCuisineId(item.cuisine);
+        const categoryId = getCategoryId(item.category, cuisineId);
+        const res = await fetch("/api/menu", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...item, cuisine_id: cuisineId, category_id: categoryId }),
+        });
+        if (!res.ok) throw new Error("Failed to update item");
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+      setEditing(null);
+      fetchMenuData();
+    } catch (error) {
+      console.error("Save error:", error);
     }
   };
 
-  const handleSave = (item: MenuItem) => {
-    if (editing === "new") {
-      const newItem = { ...item, id: `custom_${Date.now()}` };
-      saveToStorage([...items, newItem]);
-    } else {
-      saveToStorage(items.map((i) => (i.id === item.id ? { ...item } : i)));
-    }
-    setEditing(null);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this item?")) {
-      saveToStorage(items.filter((i) => i.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this item?")) return;
+    try {
+      const res = await fetch(`/api/menu?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete item");
+      fetchMenuData();
+    } catch (error) {
+      console.error("Delete error:", error);
     }
   };
 
-  const handleReset = () => {
-    if (confirm("Reset all changes to default menu?")) {
-      saveToStorage(MENU_ITEMS);
-    }
-  };
-
-  if (!mounted) {
-    return <div className="min-h-screen bg-paper" />;
+  if (!mounted || loading) {
+    return <div className="min-h-screen bg-paper flex items-center justify-center"><p className="text-stone text-sm">Loading...</p></div>;
   }
 
   const filtered = items.filter((item) => {
-    if (filterCuisine !== "All" && item.cuisine !== filterCuisine) return false;
+    const cuisineName = getCuisineName(item.cuisine_id);
+    if (filterCuisine !== "All" && cuisineName !== filterCuisine) return false;
     if (search && !`${item.name} ${item.description}`.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
   const grouped: Record<string, MenuItem[]> = {};
   CUISINES.forEach((c) => {
-    const cuisineItems = filtered.filter((i) => i.cuisine === c);
+    const cuisineItems = filtered.filter((i) => getCuisineName(i.cuisine_id) === c);
     if (cuisineItems.length > 0) {
       grouped[c] = cuisineItems;
     }
@@ -104,10 +162,7 @@ export default function AdminMenuPage() {
               <p className="text-sm text-parchment/60 mt-1">Add, edit, and organize your menu items</p>
             </div>
             <div className="flex items-center gap-3">
-              {saved && <span className="text-xs text-olive bg-olive/10 px-3 py-1 rounded">✓ Saved</span>}
-              <button onClick={handleReset} className="text-xs text-parchment/60 border border-parchment/20 px-3 py-2 hover:bg-parchment/10 transition-colors">
-                Reset to Default
-              </button>
+              {saved && <span className="text-xs text-olive bg-olive/10 px-3 py-1 rounded">✓ Saved to Database</span>}
               <button onClick={() => setEditing("new")} className="flex items-center gap-2 px-4 py-2 bg-saffron text-ink text-sm hover:bg-saffronLight transition-colors">
                 <Plus size={16} /> Add Item
               </button>
@@ -138,7 +193,7 @@ export default function AdminMenuPage() {
               <button onClick={() => setEditing(null)} className="p-1 hover:bg-parchment/10"><X size={20} /></button>
             </div>
             <ItemForm
-              item={editing === "new" ? { id: "", name: "", description: "", price: 0, is_vegetarian: false, is_vegan: false, is_spicy: false, is_featured: false, cuisine: "Lebanese", category: "Mezze" } : editing}
+              item={editing === "new" ? { name: "", description: "", price: 0, is_vegetarian: false, is_vegan: false, is_spicy: false, is_featured: false, cuisine: "Lebanese", category: "Mezze" } : { ...editing, cuisine: getCuisineName(editing.cuisine_id), category: getCategoryName(editing.category_id) }}
               onSave={handleSave}
               onCancel={() => setEditing(null)}
             />
@@ -177,7 +232,7 @@ export default function AdminMenuPage() {
                           {item.is_spicy && <span className="text-[10px] px-2 py-0.5 bg-clay/10 text-clay">Spicy</span>}
                         </div>
                         <p className="text-sm text-stone truncate">{item.description}</p>
-                        <p className="text-xs text-stone/60 mt-1">{item.category} • ${item.price.toFixed(2)}</p>
+                        <p className="text-xs text-stone/60 mt-1">{getCategoryName(item.category_id)} • ${item.price.toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
@@ -195,10 +250,10 @@ export default function AdminMenuPage() {
   );
 }
 
-function ItemForm({ item, onSave, onCancel }: { item: MenuItem; onSave: (item: MenuItem) => void; onCancel: () => void }) {
-  const [form, setForm] = useState<MenuItem>(item);
+function ItemForm({ item, onSave, onCancel }: { item: any; onSave: (item: any) => void; onCancel: () => void }) {
+  const [form, setForm] = useState(item);
 
-  const update = (field: keyof MenuItem, value: string | number | boolean) => {
+  const update = (field: string, value: string | number | boolean) => {
     setForm({ ...form, [field]: value });
   };
 
@@ -213,7 +268,7 @@ function ItemForm({ item, onSave, onCancel }: { item: MenuItem; onSave: (item: M
         <textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={2} className="w-full border border-stone/20 px-3 py-2 mt-1 text-sm resize-none" />
       </div>
       <div>
-        <label className="text-sm text-stone flex items-center gap-2"><span>Image URL</span></label>
+        <label className="text-sm text-stone">Image URL</label>
         <input value={form.image || ""} onChange={(e) => update("image", e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full border border-stone/20 px-3 py-2 mt-1 text-sm" />
         {form.image && <img src={form.image} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded" />}
       </div>
@@ -242,7 +297,7 @@ function ItemForm({ item, onSave, onCancel }: { item: MenuItem; onSave: (item: M
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_featured} onChange={(e) => update("is_featured", e.target.checked)} /> Featured</label>
       </div>
       <div className="flex gap-3 pt-4">
-        <button type="submit" className="flex items-center gap-2 px-6 py-2.5 bg-ink text-parchment text-sm hover:bg-charcoal transition-colors"><Save size={16} /> Save Item</button>
+        <button type="submit" className="flex items-center gap-2 px-6 py-2.5 bg-ink text-parchment text-sm hover:bg-charcoal transition-colors"><Save size={16} /> Save to Database</button>
         <button type="button" onClick={onCancel} className="px-6 py-2.5 border border-stone/20 text-sm hover:bg-stone/5 transition-colors">Cancel</button>
       </div>
     </form>

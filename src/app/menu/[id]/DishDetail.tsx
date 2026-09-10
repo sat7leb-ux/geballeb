@@ -6,33 +6,30 @@ import { ArrowLeft, Leaf, Flame } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CuisineSwatch from "@/components/CuisineSwatch";
-import { MENU_ITEMS } from "@/lib/menu-data";
-import type { MenuItem } from "@/lib/menu-data";
 
-const STORAGE_KEY = "gebal_menu_items";
-
-export default function DishDetail({ dish: initialDish, related: initialRelated }: { dish: MenuItem; related: MenuItem[] }) {
+export default function DishDetail({ id, dish: initialDish, related: initialRelated }: { id: string; dish: any; related: any[] }) {
   const [dish, setDish] = useState(initialDish);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Check localStorage for updated dish data
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          const found = parsed.find((item: MenuItem) => item.id === initialDish.id);
+    // Fetch from API to get updated data from Supabase
+    fetch("/api/menu")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.menuItems) {
+          const found = data.menuItems.find((item: any) => item.id === id);
           if (found) {
             setDish(found);
           }
         }
-      }
-    } catch {
-      // ignore
-    }
-  }, [initialDish.id]);
+      })
+      .catch(() => {});
+  }, [id]);
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-paper" />;
+  }
 
   return (
     <>
@@ -79,8 +76,8 @@ export default function DishDetail({ dish: initialDish, related: initialRelated 
               <div className="grid sm:grid-cols-3 gap-6">
                 {initialRelated.map((r) => (
                   <Link key={r.id} href={`/menu/${r.id}`} className="group block">
-                    <div className="aspect-square overflow-hidden">
-                      <CuisineSwatch cuisine={r.cuisine} className="w-full h-full group-hover:scale-105 transition-transform duration-1000 ease-luxury" image={r.image} />
+                    <div className="max-h-[300px] overflow-hidden flex items-center justify-center">
+                      <CuisineSwatch cuisine={r.cuisine} className="max-h-[300px] w-auto object-contain" image={r.image} />
                     </div>
                     <p className="text-sm text-ink mt-3 group-hover:text-saffron transition-colors duration-300">{r.name}</p>
                   </Link>

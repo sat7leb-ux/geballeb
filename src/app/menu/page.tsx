@@ -4,32 +4,55 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MenuBrowser from "./MenuBrowser";
-import { MENU_ITEMS } from "@/lib/menu-data";
 
-const STORAGE_KEY = "gebal_menu_items";
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  is_vegetarian: boolean;
+  is_vegan: boolean;
+  is_spicy: boolean;
+  is_featured: boolean;
+  cuisine_id: string;
+  category_id: string;
+  image?: string;
+  cuisine: string;
+  category: string;
+}
 
 export default function MenuPage() {
-  const [items, setItems] = useState(MENU_ITEMS);
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadItems = () => {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setItems(parsed);
-          }
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    loadItems();
-    window.addEventListener("storage", loadItems);
-    return () => window.removeEventListener("storage", loadItems);
+    fetchMenuData();
   }, []);
+
+  const fetchMenuData = async () => {
+    try {
+      const res = await fetch("/api/menu");
+      const data = await res.json();
+      if (data.menuItems) {
+        setItems(data.menuItems);
+      }
+    } catch (error) {
+      console.error("Failed to fetch menu:", error);
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-paper flex items-center justify-center">
+          <p className="text-stone text-sm">Loading menu...</p>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

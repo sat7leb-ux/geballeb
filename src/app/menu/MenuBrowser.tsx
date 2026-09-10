@@ -4,9 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Leaf, Flame, Star } from "lucide-react";
 import CuisineSwatch from "@/components/CuisineSwatch";
-import type { MenuItem } from "@/lib/menu-data";
-
-const STORAGE_KEY = "gebal_menu_items";
 
 const CUISINES = [
   { name: "Lebanese", icon: "🌿", tagline: "The table our family built", description: "Recipes unchanged in three generations.", bgGradient: "from-amber-50 to-orange-50", pattern: "cedar" },
@@ -35,31 +32,24 @@ function getPattern(pattern: string): string {
   return patterns[pattern] || "none";
 }
 
-export default function MenuBrowser({ items: initialItems }: { items: MenuItem[] }) {
-  const [items, setItems] = useState<MenuItem[]>(initialItems);
+// Normalize item format (Supabase or local)
+function normalizeItem(item: any) {
+  return {
+    ...item,
+    cuisine: item.cuisine || item.cuisines?.name || "",
+    category: item.category || item.categories?.name || "",
+  };
+}
+
+export default function MenuBrowser({ items: initialItems }: { items: any[] }) {
+  const [items, setItems] = useState<any[]>(initialItems.map(normalizeItem));
   const [activeCuisine, setActiveCuisine] = useState("All");
   const [query, setQuery] = useState("");
   const [dietOnly, setDietOnly] = useState<"veg" | "vegan" | null>(null);
 
   useEffect(() => {
-    const loadItems = () => {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setItems(parsed);
-          }
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    loadItems();
-    window.addEventListener("storage", loadItems);
-    return () => window.removeEventListener("storage", loadItems);
-  }, []);
+    setItems(initialItems.map(normalizeItem));
+  }, [initialItems]);
 
   const cuisineCounts: Record<string, number> = {};
   items.forEach((item) => {
@@ -74,7 +64,7 @@ export default function MenuBrowser({ items: initialItems }: { items: MenuItem[]
     return true;
   });
 
-  const groupedItems: Record<string, MenuItem[]> = {};
+  const groupedItems: Record<string, any[]> = {};
   CUISINES.forEach((c) => {
     const cuisineItems = filtered.filter((i) => i.cuisine === c.name);
     if (cuisineItems.length > 0) {
@@ -113,8 +103,8 @@ export default function MenuBrowser({ items: initialItems }: { items: MenuItem[]
               <span className="text-xs text-saffron tracking-[0.2em] uppercase">Chef's Pick</span>
             </div>
             <div className="grid md:grid-cols-2 gap-8 items-center bg-white border border-stone/20 overflow-hidden">
-              <div className="aspect-square md:aspect-auto md:h-80">
-                <CuisineSwatch cuisine={featuredItem.cuisine} className="w-full h-full" image={featuredItem.image} />
+              <div className="max-h-[500px] overflow-hidden flex items-center justify-center">
+                <CuisineSwatch cuisine={featuredItem.cuisine} className="max-h-[500px] w-auto object-contain" image={featuredItem.image} />
               </div>
               <div className="p-8">
                 <div className="text-xs text-rust tracking-wide uppercase mb-2">{featuredItem.cuisine}</div>
@@ -228,7 +218,7 @@ export default function MenuBrowser({ items: initialItems }: { items: MenuItem[]
   );
 }
 
-function DishCard({ dish }: { dish: MenuItem }) {
+function DishCard({ dish }: { dish: any }) {
   return (
     <Link href={`/menu/${dish.id}`} className="group block bg-white border border-stone/10 hover:border-saffron/30 hover:shadow-lg transition-all duration-500">
       <div className="aspect-[4/3] overflow-hidden">
