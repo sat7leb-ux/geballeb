@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { RestaurantJsonLd } from "@/components/RestaurantJsonLd";
+import ChatWidget from "@/components/ChatWidget";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -59,6 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-body antialiased">
         <RestaurantJsonLd settings={settings ?? undefined} />
         {children}
+        <ChatWidget />
       </body>
     </html>
   );
