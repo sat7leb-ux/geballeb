@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Save, X, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, ChevronDown, ChevronUp, Search, Star, FolderPlus } from "lucide-react";
 
-const CUISINES = ["Lebanese", "Oriental", "Chinese", "Italian", "Sandwiches", "Drinks", "Alcoholic Beverages", "Chicha", "Desserts"];
+const CUISINES = ["Lebanese", "Oriental", "Chinese", "Italian", "Sandwiches", "Drinks", "Alcoholic Beverages", "Chicha", "Desserts", "Seafood"];
 
 const CATEGORIES: Record<string, string[]> = {
   Lebanese: ["Mezze", "Grills", "Bakery", "Salads", "Soups"],
@@ -15,6 +15,7 @@ const CATEGORIES: Record<string, string[]> = {
   "Alcoholic Beverages": ["Lebanese Wines", "Arak", "Cocktails", "Beer", "Spirits"],
   Chicha: ["Fruit Flavors", "Mint & Sweet", "Berry & Citrus", "Classic", "Premium", "Exotic"],
   Desserts: ["Lebanese Sweets", "Oriental Sweets", "Chinese Sweets", "Italian Sweets", "Ice Cream", "Pastries"],
+  Seafood: ["Fish Dishes", "Shellfish", "Mixed Seafood"],
 };
 
 interface MenuItem {
@@ -55,8 +56,10 @@ export default function AdminMenuPage() {
   const [saved, setSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryCuisine, setNewCategoryCuisine] = useState("Lebanese");
 
-  // Fetch data from Supabase
   useEffect(() => {
     setMounted(true);
     fetchMenuData();
@@ -76,42 +79,29 @@ export default function AdminMenuPage() {
     setLoading(false);
   };
 
-  const getCuisineName = (cuisineId: string) => {
-    return cuisines.find(c => c.id === cuisineId)?.name || "";
-  };
-
-  const getCategoryName = (categoryId: string) => {
-    return categories.find(c => c.id === categoryId)?.name || "";
-  };
-
-  const getCuisineId = (name: string) => {
-    return cuisines.find(c => c.name === name)?.id || "";
-  };
-
-  const getCategoryId = (name: string, cuisineId: string) => {
-    return categories.find(c => c.name === name && c.cuisine_id === cuisineId)?.id || "";
-  };
+  const getCuisineName = (cuisineId: string) => cuisines.find(c => c.id === cuisineId)?.name || "";
+  const getCategoryName = (categoryId: string) => categories.find(c => c.id === categoryId)?.name || "";
+  const getCuisineId = (name: string) => cuisines.find(c => c.name === name)?.id || "";
+  const getCategoryId = (name: string, cuisineId: string) => categories.find(c => c.name === name && c.cuisine_id === cuisineId)?.id || "";
 
   const handleSave = async (item: any) => {
     try {
       if (editing === "new") {
         const cuisineId = getCuisineId(item.cuisine);
         const categoryId = getCategoryId(item.category, cuisineId);
-        const res = await fetch("/api/menu", {
+        await fetch("/api/menu", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...item, cuisine_id: cuisineId, category_id: categoryId }),
         });
-        if (!res.ok) throw new Error("Failed to create item");
       } else {
         const cuisineId = getCuisineId(item.cuisine);
         const categoryId = getCategoryId(item.category, cuisineId);
-        const res = await fetch("/api/menu", {
+        await fetch("/api/menu", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...item, cuisine_id: cuisineId, category_id: categoryId }),
         });
-        if (!res.ok) throw new Error("Failed to update item");
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -125,11 +115,28 @@ export default function AdminMenuPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
     try {
-      const res = await fetch(`/api/menu?id=${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete item");
+      await fetch(`/api/menu?id=${id}`, { method: "DELETE" });
       fetchMenuData();
     } catch (error) {
       console.error("Delete error:", error);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCategoryName, cuisine_id: getCuisineId(newCategoryCuisine) }),
+      });
+      if (res.ok) {
+        setNewCategoryName("");
+        setShowAddCategory(false);
+        fetchMenuData();
+      }
+    } catch (error) {
+      console.error("Failed to add category:", error);
     }
   };
 
@@ -163,6 +170,9 @@ export default function AdminMenuPage() {
             </div>
             <div className="flex items-center gap-3">
               {saved && <span className="text-xs text-olive bg-olive/10 px-3 py-1 rounded">✓ Saved to Database</span>}
+              <button onClick={() => setShowAddCategory(true)} className="flex items-center gap-2 px-4 py-2 border border-parchment/20 text-sm text-parchment hover:bg-parchment/10 transition-colors">
+                <FolderPlus size={16} /> Add Category
+              </button>
               <button onClick={() => setEditing("new")} className="flex items-center gap-2 px-4 py-2 bg-saffron text-ink text-sm hover:bg-saffronLight transition-colors">
                 <Plus size={16} /> Add Item
               </button>
@@ -185,6 +195,35 @@ export default function AdminMenuPage() {
         </div>
       </div>
 
+      {/* Add Category Modal */}
+      {showAddCategory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4">
+          <div className="bg-white w-full max-w-md">
+            <div className="bg-ink text-parchment px-6 py-4 flex items-center justify-between">
+              <h2 className="font-display text-lg">Add New Category</h2>
+              <button onClick={() => setShowAddCategory(false)} className="p-1 hover:bg-parchment/10"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-sm text-stone">Category Name</label>
+                <input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="e.g. Breakfast" className="w-full border border-stone/20 px-3 py-2 mt-1 text-sm" />
+              </div>
+              <div>
+                <label className="text-sm text-stone">Cuisine</label>
+                <select value={newCategoryCuisine} onChange={(e) => setNewCategoryCuisine(e.target.value)} className="w-full border border-stone/20 px-3 py-2 mt-1 text-sm bg-white">
+                  {CUISINES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button onClick={handleAddCategory} className="flex items-center gap-2 px-6 py-2.5 bg-ink text-parchment text-sm hover:bg-charcoal transition-colors">Save Category</button>
+                <button onClick={() => setShowAddCategory(false)} className="px-6 py-2.5 border border-stone/20 text-sm hover:bg-stone/5 transition-colors">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4">
           <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -201,13 +240,14 @@ export default function AdminMenuPage() {
         </div>
       )}
 
+      {/* Items List */}
       <div className="max-w-7xl mx-auto px-6 md:px-10 py-8">
         {Object.entries(grouped).map(([cuisine, cuisineItems]) => (
           <div key={cuisine} className="mb-8">
             <button onClick={() => setExpandedCuisine(expandedCuisine === cuisine ? null : cuisine)} className="w-full flex items-center justify-between py-4 border-b border-stone/20 text-left">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">
-                  {cuisine === "Lebanese" ? "🌿" : cuisine === "Oriental" ? "🔥" : cuisine === "Chinese" ? "🥢" : cuisine === "Italian" ? "🍝" : cuisine === "Sandwiches" ? "🥙" : cuisine === "Drinks" ? "🥤" : cuisine === "Alcoholic Beverages" ? "🍷" : cuisine === "Chicha" ? "💨" : "🍰"}
+                  {cuisine === "Lebanese" ? "🌿" : cuisine === "Oriental" ? "🔥" : cuisine === "Chinese" ? "🥢" : cuisine === "Italian" ? "🍝" : cuisine === "Sandwiches" ? "🥙" : cuisine === "Drinks" ? "🥤" : cuisine === "Alcoholic Beverages" ? "🍷" : cuisine === "Chicha" ? "💨" : cuisine === "Seafood" ? "🐟" : "🍰"}
                 </span>
                 <h2 className="font-display text-xl text-ink">{cuisine}</h2>
                 <span className="text-sm text-stone">({cuisineItems.length} items)</span>
@@ -227,7 +267,7 @@ export default function AdminMenuPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium text-ink truncate">{item.name}</h3>
-                          {item.is_featured && <span className="text-[10px] px-2 py-0.5 bg-saffron/10 text-saffron">Featured</span>}
+                          {item.is_featured && <span className="text-[10px] px-2 py-0.5 bg-saffron/10 text-saffron flex items-center gap-1"><Star size={8} /> Chef's Pick</span>}
                           {item.is_vegetarian && <span className="text-[10px] px-2 py-0.5 bg-olive/10 text-olive">Veg</span>}
                           {item.is_spicy && <span className="text-[10px] px-2 py-0.5 bg-clay/10 text-clay">Spicy</span>}
                         </div>
@@ -270,7 +310,7 @@ function ItemForm({ item, onSave, onCancel }: { item: any; onSave: (item: any) =
       <div>
         <label className="text-sm text-stone">Image URL</label>
         <input value={form.image || ""} onChange={(e) => update("image", e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full border border-stone/20 px-3 py-2 mt-1 text-sm" />
-        {form.image && <img src={form.image} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded" />}
+        {form.image && <img src={form.image} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />}
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -294,7 +334,7 @@ function ItemForm({ item, onSave, onCancel }: { item: any; onSave: (item: any) =
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_vegetarian} onChange={(e) => update("is_vegetarian", e.target.checked)} /> Vegetarian</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_vegan} onChange={(e) => update("is_vegan", e.target.checked)} /> Vegan</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_spicy} onChange={(e) => update("is_spicy", e.target.checked)} /> Spicy</label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_featured} onChange={(e) => update("is_featured", e.target.checked)} /> Featured</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_featured} onChange={(e) => update("is_featured", e.target.checked)} /> Chef's Pick</label>
       </div>
       <div className="flex gap-3 pt-4">
         <button type="submit" className="flex items-center gap-2 px-6 py-2.5 bg-ink text-parchment text-sm hover:bg-charcoal transition-colors"><Save size={16} /> Save to Database</button>

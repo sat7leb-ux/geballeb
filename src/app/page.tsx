@@ -17,6 +17,7 @@ export default async function HomePage() {
       .select("*, cuisines(name)")
       .eq("is_featured", true)
       .eq("is_available", true)
+      .not("image", "is", null)
       .limit(4),
     supabase.from("restaurant_settings").select("*").eq("id", 1).single(),
   ]);
@@ -163,45 +164,56 @@ export default async function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {cuisineList.map((c, i) => (
-              <Link
-                key={c.id}
-                href="/menu"
-                className="group relative block overflow-hidden"
-              >
-                <div className="aspect-[3/4] relative">
-                  <CuisineSwatch cuisine={c.name} className="absolute inset-0 w-full h-full" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
-                  <div className="absolute inset-0 flex flex-col justify-end p-6">
-                    <span className="text-[10px] text-saffron tracking-widest uppercase mb-2">
-                      {["I", "II", "III", "IV"][i]}
-                    </span>
-                    <h3 className="font-display text-2xl text-parchment">{c.name}</h3>
-                    <p className="text-xs text-parchment/60 mt-2 leading-relaxed">
-                      {c.tagline}
-                    </p>
-                    <div className="mt-4 flex items-center gap-2 text-xs text-saffron opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      Explore <ArrowRight size={12} />
+            {cuisineList.slice(0, 4).map((c, i) => {
+              const images = [
+                "https://images.unsplash.com/photo-1577805947697-89e18249d767?w=600&h=800&fit=crop",
+                "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&h=800&fit=crop",
+                "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=600&h=800&fit=crop",
+                "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&h=800&fit=crop",
+              ];
+              return (
+                <Link
+                  key={c.id}
+                  href="/menu"
+                  className="group relative block overflow-hidden"
+                >
+                  <div className="aspect-[3/4] relative">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-1000 ease-luxury"
+                      style={{ backgroundImage: `url('${images[i]}')` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
+                    <div className="absolute inset-0 flex flex-col justify-end p-6">
+                      <span className="text-[10px] text-saffron tracking-widest uppercase mb-2">
+                        {["I", "II", "III", "IV"][i]}
+                      </span>
+                      <h3 className="font-display text-2xl text-parchment">{c.name}</h3>
+                      <p className="text-xs text-parchment/60 mt-2 leading-relaxed">
+                        {c.tagline}
+                      </p>
+                      <div className="mt-4 flex items-center gap-2 text-xs text-saffron opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        Explore <ArrowRight size={12} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Signature Dishes */}
+      {/* Chef's Pick */}
       <section className="section-padding bg-paper">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-px bg-saffron" />
-                <span className="text-xs text-saffron tracking-[0.2em] uppercase">Signature</span>
+                <span className="text-xs text-saffron tracking-[0.2em] uppercase">Chef's Pick</span>
               </div>
               <h2 className="font-display text-display-md text-ink">
-                On the table this week
+                Featured this week
               </h2>
             </div>
             <Link
@@ -220,10 +232,15 @@ export default async function HomePage() {
                 className="group block card-hover"
               >
                 <div className="aspect-square bg-ink overflow-hidden">
-                  <CuisineSwatch
-                    cuisine={d.cuisines?.name ?? ""}
-                    className="w-full h-full group-hover:scale-105 transition-transform duration-1000 ease-luxury"
-                  />
+                  {d.image ? (
+                    <img
+                      src={d.image}
+                      alt={d.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-luxury"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-stone/20 flex items-center justify-center text-stone/40 text-sm">No image</div>
+                  )}
                 </div>
                 <div className="mt-4">
                   <h3 className="font-display text-lg text-ink group-hover:text-saffron transition-colors duration-300">

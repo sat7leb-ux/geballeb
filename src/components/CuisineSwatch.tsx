@@ -17,7 +17,7 @@ export default function CuisineSwatch({ cuisine, className = "", image }: { cuis
         <img
           src={image}
           alt={cuisine}
-          className="max-w-full max-h-full object-contain"
+          className="w-full h-full object-cover"
           loading="lazy"
         />
       </div>

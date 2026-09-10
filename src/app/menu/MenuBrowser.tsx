@@ -15,6 +15,7 @@ const CUISINES = [
   { name: "Alcoholic Beverages", icon: "🍷", tagline: "Wine, arak, cocktails", description: "Lebanese wines and premium arak.", bgGradient: "from-purple-50 to-rose-50", pattern: "grapes" },
   { name: "Chicha", icon: "💨", tagline: "Hookah and shisha", description: "Premium shisha tobacco.", bgGradient: "from-gray-50 to-slate-50", pattern: "smoke" },
   { name: "Desserts", icon: "🍰", tagline: "Sweet endings", description: "Baklava, tiramisu, knafeh.", bgGradient: "from-pink-50 to-rose-50", pattern: "sweet" },
+  { name: "Seafood", icon: "🐟", tagline: "Fresh from the Mediterranean", description: "Grilled fish, shrimp, calamari.", bgGradient: "from-blue-50 to-cyan-50", pattern: "geometric" },
 ];
 
 function getPattern(pattern: string): string {
@@ -32,6 +33,15 @@ function getPattern(pattern: string): string {
   return patterns[pattern] || "none";
 }
 
+// Transform API item to match expected format
+function transformItem(item: any) {
+  return {
+    ...item,
+    cuisine: item.cuisine || item.cuisines?.name || "",
+    category: item.category || item.categories?.name || "",
+  };
+}
+
 export default function MenuBrowser() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +54,7 @@ export default function MenuBrowser() {
       .then((res) => res.json())
       .then((data) => {
         if (data.menuItems) {
-          setItems(data.menuItems);
+          setItems(data.menuItems.map(transformItem));
         }
         setLoading(false);
       })
