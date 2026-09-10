@@ -7,28 +7,46 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CuisineSwatch from "@/components/CuisineSwatch";
 
-export default function DishDetail({ id, dish: initialDish, related: initialRelated }: { id: string; dish: any; related: any[] }) {
-  const [dish, setDish] = useState(initialDish);
-  const [mounted, setMounted] = useState(false);
+export default function DishDetail({ id }: { id: string }) {
+  const [dish, setDish] = useState<any>(null);
+  const [related, setRelated] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-    // Fetch from API to get updated data from Supabase
-    fetch("/api/menu")
+    fetch(`/api/menu`)
       .then((res) => res.json())
       .then((data) => {
         if (data.menuItems) {
           const found = data.menuItems.find((item: any) => item.id === id);
           if (found) {
             setDish(found);
+            // Find related items
+            const relatedItems = data.menuItems
+              .filter((item: any) => item.cuisine_id === found.cuisine_id && item.id !== id)
+              .slice(0, 3);
+            setRelated(relatedItems);
           }
         }
+        setLoading(false);
       })
-      .catch(() => {});
+      .catch(() => setLoading(false));
   }, [id]);
 
-  if (!mounted) {
+  if (loading) {
     return <div className="min-h-screen bg-paper" />;
+  }
+
+  if (!dish) {
+    return (
+      <>
+        <Header />
+        <div className="pt-24 pb-20 bg-paper text-center">
+          <p className="text-stone">Dish not found</p>
+          <Link href="/menu" className="text-saffron text-sm hover:underline">Back to menu</Link>
+        </div>
+        <Footer />
+      </>
+    );
   }
 
   return (
@@ -70,11 +88,11 @@ export default function DishDetail({ id, dish: initialDish, related: initialRela
             </div>
           </div>
 
-          {initialRelated.length > 0 && (
+          {related.length > 0 && (
             <div className="mt-20 pt-12 border-t border-stone/20">
               <h2 className="font-display text-2xl text-ink mb-8">More {dish.cuisine}</h2>
               <div className="grid sm:grid-cols-3 gap-6">
-                {initialRelated.map((r) => (
+                {related.map((r) => (
                   <Link key={r.id} href={`/menu/${r.id}`} className="group block">
                     <div className="max-h-[300px] overflow-hidden flex items-center justify-center">
                       <CuisineSwatch cuisine={r.cuisine} className="max-h-[300px] w-auto object-contain" image={r.image} />

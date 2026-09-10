@@ -32,24 +32,24 @@ function getPattern(pattern: string): string {
   return patterns[pattern] || "none";
 }
 
-// Normalize item format (Supabase or local)
-function normalizeItem(item: any) {
-  return {
-    ...item,
-    cuisine: item.cuisine || item.cuisines?.name || "",
-    category: item.category || item.categories?.name || "",
-  };
-}
-
-export default function MenuBrowser({ items: initialItems }: { items: any[] }) {
-  const [items, setItems] = useState<any[]>(initialItems.map(normalizeItem));
+export default function MenuBrowser() {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCuisine, setActiveCuisine] = useState("All");
   const [query, setQuery] = useState("");
   const [dietOnly, setDietOnly] = useState<"veg" | "vegan" | null>(null);
 
   useEffect(() => {
-    setItems(initialItems.map(normalizeItem));
-  }, [initialItems]);
+    fetch("/api/menu")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.menuItems) {
+          setItems(data.menuItems);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const cuisineCounts: Record<string, number> = {};
   items.forEach((item) => {
@@ -73,6 +73,10 @@ export default function MenuBrowser({ items: initialItems }: { items: any[] }) {
   });
 
   const featuredItem = items.find((i) => i.is_featured) || items[0];
+
+  if (loading) {
+    return <div className="min-h-screen bg-paper" />;
+  }
 
   return (
     <div>

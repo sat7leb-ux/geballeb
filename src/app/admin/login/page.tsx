@@ -11,15 +11,13 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     if (email === "eliekhachane@gebal.com" && password === "@cc3pt3D2026") {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("gebal_auth", "authenticated");
-      }
+      localStorage.setItem("gebal_auth", "authenticated");
       router.push("/admin");
     } else {
       setError("Invalid email or password. Please try again.");
