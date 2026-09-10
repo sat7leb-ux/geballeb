@@ -48,8 +48,8 @@ export default function DishDetail({ dish: initialDish, related: initialRelated 
       <section className="pb-20 bg-paper">
         <div className="max-w-6xl mx-auto px-6 md:px-10">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16">
-            <div className="aspect-square overflow-hidden">
-              <CuisineSwatch cuisine={dish.cuisine} className="w-full h-full" image={dish.image} />
+            <div className="max-h-[500px] overflow-hidden flex items-center justify-center">
+              <CuisineSwatch cuisine={dish.cuisine} className="max-h-[500px] w-auto object-contain" image={dish.image} />
             </div>
 
             <div className="flex flex-col justify-center">
