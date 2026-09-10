@@ -7,13 +7,10 @@ export const revalidate = 60;
 export const metadata = { title: "Menu" };
 
 export default async function MenuPage() {
-  const items = MENU_ITEMS;
-  const cuisineNames = [...new Set(MENU_ITEMS.map((i) => i.cuisine))];
-
   return (
     <>
       <Header />
-      <MenuBrowser items={items} cuisineNames={cuisineNames} />
+      <MenuBrowser items={MENU_ITEMS} />
       <Footer />
     </>
   );
