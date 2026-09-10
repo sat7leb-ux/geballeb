@@ -1,26 +1,43 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import AdminSidebar from "@/components/AdminSidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [authed, setAuthed] = useState(false);
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const auth = localStorage.getItem("gebal_auth");
-    if (auth !== "authenticated") {
-      router.push("/admin/login");
-    } else {
-      setAuthed(true);
-    }
-  }, [router]);
+    setMounted(true);
+  }, []);
 
-  if (!authed) {
+  // Only check auth after hydration (client-side)
+  const isAuthenticated = mounted && typeof window !== "undefined" && localStorage.getItem("gebal_auth") === "authenticated";
+  const isLoginPage = pathname === "/admin/login";
+
+  // Don't show loading state during SSR or on login page
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
-        <p className="text-stone text-sm">Redirecting to login…</p>
+        <p className="text-stone text-sm">Loading…</p>
+      </div>
+    );
+  }
+
+  // On login page, just render children
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  // On other admin pages, check auth
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-paper flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-stone text-sm mb-4">Please log in to access the admin panel.</p>
+          <a href="/admin/login" className="text-sm text-saffron hover:underline">Go to login</a>
+        </div>
       </div>
     );
   }
