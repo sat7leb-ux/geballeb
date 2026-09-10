@@ -16,13 +16,12 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError("");
 
-    // Simple auth check - in production, use proper authentication
-    if (email === "admin@gebal.com" && password === "admin123") {
+    if (email === "eliekhachane@gebal.com" && password === "@cc3pt3D2026") {
       localStorage.setItem("gebal_auth", "authenticated");
       router.push("/admin");
       router.refresh();
     } else {
-      setError("Invalid credentials. Use admin@gebal.com / admin123");
+      setError("Invalid credentials");
     }
     setLoading(false);
   };
@@ -33,9 +32,7 @@ export default function AdminLoginPage() {
         <Lock size={20} className="text-saffron" />
       </div>
       <h1 className="font-display text-2xl">Staff sign in</h1>
-      <p className="text-xs text-stone mt-2">
-        GEBAL admin dashboard
-      </p>
+      <p className="text-xs text-stone mt-2">GEBAL admin dashboard</p>
       <form className="mt-8 flex flex-col gap-4" onSubmit={submit}>
         <div>
           <label className="text-xs text-stone">Email</label>
@@ -66,9 +63,6 @@ export default function AdminLoginPage() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <p className="text-xs text-stone/60 mt-4">
-        Demo credentials: admin@gebal.com / admin123
-      </p>
     </div>
   );
 }
