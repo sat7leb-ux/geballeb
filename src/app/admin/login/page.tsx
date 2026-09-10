@@ -18,11 +18,11 @@ export default function AdminLoginPage() {
 
     if (email === "eliekhachane@gebal.com" && password === "@cc3pt3D2026") {
       if (typeof window !== "undefined") {
-        localStorage.setItem("gebal_auth", "authenticated");
+        sessionStorage.setItem("gebal_auth", "authenticated");
       }
       router.push("/admin");
     } else {
-      setError("Invalid email or password");
+      setError("Invalid email or password. Please try again.");
     }
     setLoading(false);
   };

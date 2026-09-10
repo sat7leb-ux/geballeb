@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Phone } from "lucide-react";
 
 interface Message {
   id: string;
@@ -12,6 +12,7 @@ interface Message {
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"chat" | "whatsapp">("chat");
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -34,15 +35,6 @@ export default function ChatWidget() {
     e.preventDefault();
     if (name.trim() && email.trim()) {
       setStarted(true);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          text: `Hi, I'm ${name}. ${email}`,
-          sender: "user",
-          timestamp: new Date(),
-        },
-      ]);
     }
   };
 
@@ -89,6 +81,12 @@ export default function ChatWidget() {
     }, 1000);
   };
 
+  const handleWhatsApp = () => {
+    const phone = "+96176784433";
+    const message = encodeURIComponent("Hi Gebal! I'd like to make an inquiry.");
+    window.open(`https://wa.me/${phone.replace("+", "")}?text=${message}`, "_blank");
+  };
+
   return (
     <>
       {/* Chat Button */}
@@ -108,8 +106,48 @@ export default function ChatWidget() {
             <p className="text-xs text-parchment/60">We typically reply within a few minutes</p>
           </div>
 
-          {!started ? (
-            /* Start Chat Form */
+          {/* Tabs */}
+          <div className="flex border-b border-stone/10">
+            <button
+              onClick={() => setActiveTab("chat")}
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                activeTab === "chat" ? "text-saffron border-b-2 border-saffron" : "text-stone hover:text-ink"
+              }`}
+            >
+              <MessageCircle size={14} className="inline mr-1" />
+              Chat Online
+            </button>
+            <button
+              onClick={() => setActiveTab("whatsapp")}
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                activeTab === "whatsapp" ? "text-green-600 border-b-2 border-green-600" : "text-stone hover:text-ink"
+              }`}
+            >
+              <Phone size={14} className="inline mr-1" />
+              WhatsApp
+            </button>
+          </div>
+
+          {activeTab === "whatsapp" ? (
+            /* WhatsApp Tab */
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Phone size={32} className="text-green-600" />
+              </div>
+              <h4 className="font-display text-lg text-ink mb-2">Message us on WhatsApp</h4>
+              <p className="text-sm text-stone mb-4">
+                Tap the button below to start a conversation with our team on WhatsApp.
+              </p>
+              <p className="text-xs text-stone/60 mb-4">+961 76 784 433</p>
+              <button
+                onClick={handleWhatsApp}
+                className="w-full bg-green-500 text-white text-sm py-3 hover:bg-green-600 transition-colors rounded"
+              >
+                Open WhatsApp
+              </button>
+            </div>
+          ) : !started ? (
+            /* Chat - Start Form */
             <form onSubmit={handleStart} className="p-4 space-y-3">
               <p className="text-sm text-stone">Start a conversation with our team.</p>
               <div>
@@ -141,7 +179,7 @@ export default function ChatWidget() {
               </button>
             </form>
           ) : (
-            /* Chat Messages */
+            /* Chat - Messages */
             <>
               <div className="h-64 overflow-y-auto p-4 space-y-3 bg-paper">
                 {messages.map((msg) => (
