@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import MenuBrowser from "./MenuBrowser";
 import { MENU_ITEMS } from "@/lib/menu-data";
+import type { MenuItem } from "@/lib/menu-data";
 
 const STORAGE_KEY = "gebal_menu_items";
 
-export default function MenuPage() {
-  const [items, setItems] = useState(MENU_ITEMS);
+export default function MenuPageClient({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<MenuItem[]>(MENU_ITEMS);
 
   useEffect(() => {
     const loadItems = () => {
@@ -31,11 +29,16 @@ export default function MenuPage() {
     return () => window.removeEventListener("storage", loadItems);
   }, []);
 
+  // Clone children and pass items prop
   return (
     <>
-      <Header />
-      <MenuBrowser items={items} />
-      <Footer />
+      {Array.isArray(children)
+        ? children.map((child, i) =>
+            child && typeof child === "object" && "type" in child
+              ? { ...child, props: { ...(child as any).props, items } }
+              : child
+          )
+        : children}
     </>
   );
 }

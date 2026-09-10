@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Leaf, Flame, Star } from "lucide-react";
 import CuisineSwatch from "@/components/CuisineSwatch";
 import type { MenuItem } from "@/lib/menu-data";
+
+const STORAGE_KEY = "gebal_menu_items";
 
 const CUISINES = [
   { name: "Lebanese", icon: "🌿", tagline: "The table our family built", description: "Recipes unchanged in three generations.", bgGradient: "from-amber-50 to-orange-50", pattern: "cedar" },
@@ -33,39 +35,52 @@ function getPattern(pattern: string): string {
   return patterns[pattern] || "none";
 }
 
-export default function MenuBrowser({ items }: { items: MenuItem[] }) {
+export default function MenuBrowser({ items: initialItems }: { items: MenuItem[] }) {
+  const [items, setItems] = useState<MenuItem[]>(initialItems);
   const [activeCuisine, setActiveCuisine] = useState("All");
   const [query, setQuery] = useState("");
   const [dietOnly, setDietOnly] = useState<"veg" | "vegan" | null>(null);
 
-  const cuisineCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    items.forEach((item) => {
-      counts[item.cuisine] = (counts[item.cuisine] || 0) + 1;
-    });
-    return counts;
-  }, [items]);
-
-  const filtered = useMemo(() => {
-    return items.filter((m) => {
-      if (activeCuisine !== "All" && m.cuisine !== activeCuisine) return false;
-      if (dietOnly === "veg" && !m.is_vegetarian) return false;
-      if (dietOnly === "vegan" && !m.is_vegan) return false;
-      if (query && !`${m.name} ${m.description}`.toLowerCase().includes(query.toLowerCase())) return false;
-      return true;
-    });
-  }, [items, activeCuisine, query, dietOnly]);
-
-  const groupedItems = useMemo(() => {
-    const grouped: Record<string, MenuItem[]> = {};
-    CUISINES.forEach((c) => {
-      const cuisineItems = filtered.filter((i) => i.cuisine === c.name);
-      if (cuisineItems.length > 0) {
-        grouped[c.name] = cuisineItems;
+  useEffect(() => {
+    const loadItems = () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setItems(parsed);
+          }
+        }
+      } catch {
+        // ignore
       }
-    });
-    return grouped;
-  }, [filtered]);
+    };
+
+    loadItems();
+    window.addEventListener("storage", loadItems);
+    return () => window.removeEventListener("storage", loadItems);
+  }, []);
+
+  const cuisineCounts: Record<string, number> = {};
+  items.forEach((item) => {
+    cuisineCounts[item.cuisine] = (cuisineCounts[item.cuisine] || 0) + 1;
+  });
+
+  const filtered = items.filter((m) => {
+    if (activeCuisine !== "All" && m.cuisine !== activeCuisine) return false;
+    if (dietOnly === "veg" && !m.is_vegetarian) return false;
+    if (dietOnly === "vegan" && !m.is_vegan) return false;
+    if (query && !`${m.name} ${m.description}`.toLowerCase().includes(query.toLowerCase())) return false;
+    return true;
+  });
+
+  const groupedItems: Record<string, MenuItem[]> = {};
+  CUISINES.forEach((c) => {
+    const cuisineItems = filtered.filter((i) => i.cuisine === c.name);
+    if (cuisineItems.length > 0) {
+      groupedItems[c.name] = cuisineItems;
+    }
+  });
 
   const featuredItem = items.find((i) => i.is_featured) || items[0];
 
