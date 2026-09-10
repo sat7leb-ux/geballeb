@@ -38,7 +38,6 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
   const [query, setQuery] = useState("");
   const [dietOnly, setDietOnly] = useState<"veg" | "vegan" | null>(null);
 
-  // Compute counts per cuisine directly from items
   const cuisineCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     items.forEach((item) => {
@@ -47,7 +46,6 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
     return counts;
   }, [items]);
 
-  // Filter items based on active cuisine, search, and dietary filters
   const filtered = useMemo(() => {
     return items.filter((m) => {
       if (activeCuisine !== "All" && m.cuisine !== activeCuisine) return false;
@@ -58,7 +56,6 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
     });
   }, [items, activeCuisine, query, dietOnly]);
 
-  // Group filtered items by cuisine
   const groupedItems = useMemo(() => {
     const grouped: Record<string, MenuItem[]> = {};
     CUISINES.forEach((c) => {
@@ -74,7 +71,6 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
 
   return (
     <div>
-      {/* Menu Hero */}
       <section className="bg-ink text-parchment py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-gradient-to-br from-saffron/20 via-transparent to-transparent" />
@@ -85,9 +81,7 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
               <div className="w-8 h-px bg-saffron" />
               <span className="text-xs text-saffron tracking-[0.2em] uppercase">The Menu</span>
             </div>
-            <h1 className="font-display text-display-lg text-parchment">
-              Four kitchens, one table
-            </h1>
+            <h1 className="font-display text-display-lg text-parchment">Four kitchens, one table</h1>
             <p className="text-lg text-parchment/60 mt-6 leading-relaxed">
               From the charcoal grill to the wok, from fresh pasta to hand-folded dumplings — 
               every dish is prepared with the same care and respect for tradition.
@@ -96,7 +90,6 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
         </div>
       </section>
 
-      {/* Featured Dish */}
       {featuredItem && (
         <section className="bg-paper py-12 border-b border-stone/10">
           <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -114,27 +107,16 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
                 <p className="text-2xl text-saffron mt-3 font-display">${Number(featuredItem.price).toFixed(2)}</p>
                 <p className="text-stone leading-relaxed mt-4">{featuredItem.description}</p>
                 <div className="flex flex-wrap gap-2 mt-6">
-                  {featuredItem.is_vegetarian && (
-                    <span className="text-xs px-3 py-1 border border-olive/30 text-olive flex items-center gap-1.5">
-                      <Leaf size={12} /> Vegetarian
-                    </span>
-                  )}
-                  {featuredItem.is_spicy && (
-                    <span className="text-xs px-3 py-1 border border-clay/30 text-clay flex items-center gap-1.5">
-                      <Flame size={12} /> Spicy
-                    </span>
-                  )}
+                  {featuredItem.is_vegetarian && <span className="text-xs px-3 py-1 border border-olive/30 text-olive flex items-center gap-1.5"><Leaf size={12} /> Vegetarian</span>}
+                  {featuredItem.is_spicy && <span className="text-xs px-3 py-1 border border-clay/30 text-clay flex items-center gap-1.5"><Flame size={12} /> Spicy</span>}
                 </div>
-                <Link href={`/menu/${featuredItem.id}`} className="inline-flex items-center gap-2 mt-8 px-6 py-3 bg-ink text-parchment text-sm hover:bg-charcoal transition-colors">
-                  View Details
-                </Link>
+                <Link href={`/menu/${featuredItem.id}`} className="inline-flex items-center gap-2 mt-8 px-6 py-3 bg-ink text-parchment text-sm hover:bg-charcoal transition-colors">View Details</Link>
               </div>
             </div>
           </div>
         </section>
       )}
 
-      {/* Cuisine Navigator */}
       <section className="bg-paper py-12 border-b border-stone/10">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
           <h2 className="text-xs text-saffron tracking-[0.2em] uppercase mb-6">Explore by Category</h2>
@@ -143,28 +125,13 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
               const isActive = activeCuisine === cuisine.name;
               const count = cuisineCounts[cuisine.name] || 0;
               return (
-                <button
-                  key={cuisine.name}
-                  onClick={() => setActiveCuisine(isActive ? "All" : cuisine.name)}
-                  className={`group relative p-5 text-left transition-all duration-500 ${
-                    isActive
-                      ? "bg-ink text-parchment shadow-xl"
-                      : "bg-white border border-stone/20 hover:border-saffron/30 hover:shadow-lg"
-                  }`}
-                >
+                <button key={cuisine.name} onClick={() => setActiveCuisine(isActive ? "All" : cuisine.name)}
+                  className={`group relative p-5 text-left transition-all duration-500 ${isActive ? "bg-ink text-parchment shadow-xl" : "bg-white border border-stone/20 hover:border-saffron/30 hover:shadow-lg"}`}>
                   <div className="text-3xl mb-3">{cuisine.icon}</div>
-                  <h3 className={`font-display text-lg leading-tight ${isActive ? "text-parchment" : "text-ink"}`}>
-                    {cuisine.name}
-                  </h3>
-                  <p className={`text-xs mt-1 ${isActive ? "text-parchment/60" : "text-stone"}`}>
-                    {cuisine.tagline}
-                  </p>
-                  <div className={`mt-3 text-xs ${isActive ? "text-saffron" : "text-stone"}`}>
-                    {count} items
-                  </div>
-                  {isActive && (
-                    <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-saffron" />
-                  )}
+                  <h3 className={`font-display text-lg leading-tight ${isActive ? "text-parchment" : "text-ink"}`}>{cuisine.name}</h3>
+                  <p className={`text-xs mt-1 ${isActive ? "text-parchment/60" : "text-stone"}`}>{cuisine.tagline}</p>
+                  <div className={`mt-3 text-xs ${isActive ? "text-saffron" : "text-stone"}`}>{count} items</div>
+                  {isActive && <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-saffron" />}
                 </button>
               );
             })}
@@ -172,44 +139,25 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
         </div>
       </section>
 
-      {/* Search & Filters */}
       <section className="bg-paper py-8 border-b border-stone/10">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2 flex-1 min-w-[240px] border border-ink/20 px-4 py-3 bg-white">
               <Search size={16} className="text-stone" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search dishes, drinks, desserts…"
-                className="text-sm outline-none w-full bg-transparent"
-              />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search dishes, drinks, desserts…" className="text-sm outline-none w-full bg-transparent" />
             </div>
-            <button
-              onClick={() => setDietOnly(dietOnly === "veg" ? null : "veg")}
-              className={`text-xs px-4 py-3 border transition-all duration-300 flex items-center gap-2 ${
-                dietOnly === "veg"
-                  ? "bg-olive/10 border-olive/40 text-olive"
-                  : "border-olive/30 text-olive hover:bg-olive/5 bg-white"
-              }`}
-            >
+            <button onClick={() => setDietOnly(dietOnly === "veg" ? null : "veg")}
+              className={`text-xs px-4 py-3 border transition-all duration-300 flex items-center gap-2 ${dietOnly === "veg" ? "bg-olive/10 border-olive/40 text-olive" : "border-olive/30 text-olive hover:bg-olive/5 bg-white"}`}>
               <Leaf size={14} /> Vegetarian
             </button>
-            <button
-              onClick={() => setDietOnly(dietOnly === "vegan" ? null : "vegan")}
-              className={`text-xs px-4 py-3 border transition-all duration-300 flex items-center gap-2 ${
-                dietOnly === "vegan"
-                  ? "bg-olive/10 border-olive/40 text-olive"
-                  : "border-olive/30 text-olive hover:bg-olive/5 bg-white"
-              }`}
-            >
+            <button onClick={() => setDietOnly(dietOnly === "vegan" ? null : "vegan")}
+              className={`text-xs px-4 py-3 border transition-all duration-300 flex items-center gap-2 ${dietOnly === "vegan" ? "bg-olive/10 border-olive/40 text-olive" : "border-olive/30 text-olive hover:bg-olive/5 bg-white"}`}>
               <Leaf size={14} /> Vegan
             </button>
           </div>
         </div>
       </section>
 
-      {/* Menu Items by Cuisine */}
       <section className="bg-paper pb-20">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
           {activeCuisine === "All" ? (
@@ -234,9 +182,7 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
                       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-saffron/30 to-transparent" />
                     </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {cuisineItems.map((d) => (
-                        <DishCard key={d.id} dish={d} />
-                      ))}
+                      {cuisineItems.map((d) => <DishCard key={d.id} dish={d} />)}
                     </div>
                   </div>
                 );
@@ -250,13 +196,10 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
                 <p className="text-stone mt-2">{CUISINES.find((c) => c.name === activeCuisine)?.description}</p>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(groupedItems[activeCuisine] || []).map((d) => (
-                  <DishCard key={d.id} dish={d} />
-                ))}
+                {(groupedItems[activeCuisine] || []).map((d) => <DishCard key={d.id} dish={d} />)}
               </div>
             </div>
           )}
-
           {filtered.length === 0 && (
             <div className="py-20 text-center">
               <Star size={48} className="text-stone/30 mx-auto mb-4" />
@@ -272,43 +215,20 @@ export default function MenuBrowser({ items }: { items: MenuItem[] }) {
 
 function DishCard({ dish }: { dish: MenuItem }) {
   return (
-    <Link
-      href={`/menu/${dish.id}`}
-      className="group block bg-white border border-stone/10 hover:border-saffron/30 hover:shadow-lg transition-all duration-500"
-    >
+    <Link href={`/menu/${dish.id}`} className="group block bg-white border border-stone/10 hover:border-saffron/30 hover:shadow-lg transition-all duration-500">
       <div className="aspect-[4/3] overflow-hidden">
-        <CuisineSwatch
-          cuisine={dish.cuisine}
-          className="w-full h-full group-hover:scale-105 transition-transform duration-1000 ease-luxury"
-          image={dish.image}
-        />
+        <CuisineSwatch cuisine={dish.cuisine} className="w-full h-full group-hover:scale-105 transition-transform duration-1000 ease-luxury" image={dish.image} />
       </div>
       <div className="p-5">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-display text-lg text-ink group-hover:text-saffron transition-colors duration-300">
-            {dish.name}
-          </h3>
-          <span className="text-sm text-saffron whitespace-nowrap font-medium">
-            ${Number(dish.price).toFixed(2)}
-          </span>
+          <h3 className="font-display text-lg text-ink group-hover:text-saffron transition-colors duration-300">{dish.name}</h3>
+          <span className="text-sm text-saffron whitespace-nowrap font-medium">${Number(dish.price).toFixed(2)}</span>
         </div>
         <p className="text-xs text-stone mt-2 leading-relaxed line-clamp-2">{dish.description}</p>
         <div className="flex flex-wrap gap-1.5 mt-3">
-          {dish.is_vegetarian && (
-            <span className="text-[10px] px-2 py-0.5 border border-olive/30 text-olive flex items-center gap-1">
-              <Leaf size={9} /> Veg
-            </span>
-          )}
-          {dish.is_spicy && (
-            <span className="text-[10px] px-2 py-0.5 border border-clay/30 text-clay flex items-center gap-1">
-              <Flame size={9} /> Spicy
-            </span>
-          )}
-          {dish.is_featured && (
-            <span className="text-[10px] px-2 py-0.5 border border-saffron/30 text-saffron flex items-center gap-1">
-              <Star size={9} /> Featured
-            </span>
-          )}
+          {dish.is_vegetarian && <span className="text-[10px] px-2 py-0.5 border border-olive/30 text-olive flex items-center gap-1"><Leaf size={9} /> Veg</span>}
+          {dish.is_spicy && <span className="text-[10px] px-2 py-0.5 border border-clay/30 text-clay flex items-center gap-1"><Flame size={9} /> Spicy</span>}
+          {dish.is_featured && <span className="text-[10px] px-2 py-0.5 border border-saffron/30 text-saffron flex items-center gap-1"><Star size={9} /> Featured</span>}
         </div>
       </div>
     </Link>
