@@ -3,11 +3,27 @@ const GRADIENTS: Record<string, string> = {
   Oriental: "linear-gradient(135deg, #2F4F2F 0%, #556B2F 50%, #8FBC8F 100%)",
   Chinese: "linear-gradient(135deg, #8B0000 0%, #CD5C5C 50%, #F08080 100%)",
   Italian: "linear-gradient(135deg, #2E4A2E 0%, #5C6B4F 50%, #8FBC8F 100%)",
+  Sandwiches: "linear-gradient(135deg, #B8860B 0%, #DAA520 50%, #F0E68C 100%)",
+  Drinks: "linear-gradient(135deg, #1E3A5F 0%, #4682B4 50%, #87CEEB 100%)",
+  "Alcoholic Beverages": "linear-gradient(135deg, #4A0E4E 0%, #7B2D8E 50%, #C77DFF 100%)",
+  Chicha: "linear-gradient(135deg, #2C2C2C 0%, #5A5A5A 50%, #8A8A8A 100%)",
+  Desserts: "linear-gradient(135deg, #C71585 0%, #FF69B4 50%, #FFB6C1 100%)",
 };
 
-// Stand-in for a real dish/cuisine photo until images are uploaded via the
-// admin panel — swap for a Supabase Storage-backed <Image> once available.
-export default function CuisineSwatch({ cuisine, className = "" }: { cuisine: string; className?: string }) {
+export default function CuisineSwatch({ cuisine, className = "", image }: { cuisine: string; className?: string; image?: string }) {
+  if (image) {
+    return (
+      <div className={`relative overflow-hidden ${className}`}>
+        <img
+          src={image}
+          alt={cuisine}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`relative overflow-hidden ${className}`}

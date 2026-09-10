@@ -26,27 +26,30 @@ export default function AboutPage() {
       {/* Story Content */}
       <section className="section-padding bg-paper">
         <div className="max-w-3xl mx-auto px-6 md:px-10">
-          <div className="space-y-8 text-lg text-stone leading-relaxed">
-            <p className="first-letter:font-display first-letter:text-5xl first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:text-ink">
-              Gebal opened because our family couldn&apos;t agree on what kind of restaurant to run.
-              One of us trained in a trattoria outside Bologna. Another spent four years in a
-              Sichuan kitchen learning to keep the numbing heat honest without burying it. A third
-              never left the grill our grandfather built by hand — the same coals, the same mixed
-              spice he ground himself.
-            </p>
-
+          <div className="space-y-6 text-lg text-stone leading-relaxed">
             <p>
-              Rather than choose, we built one dining room with four kitchens working side by
-              side. The Lebanese mezze comes from recipes that haven&apos;t changed in three
-              generations. The Oriental grills use the same charcoal method as always. The wok
-              fires stay hot enough to sear, not steam. The pasta gets rolled fresh, the way it&apos;s
-              meant to.
+              Gebal began with one simple idea: <strong className="text-ink">why choose just one cuisine when a family table can hold them all?</strong>
             </p>
-
             <p>
-              What holds it together isn&apos;t a gimmick — it&apos;s the same instinct that made our
-              grandmother&apos;s table the one everyone showed up to uninvited: cook it properly, serve
-              it warm, and always set one extra place.
+              Inspired by a lifelong love of food and by the culinary traditions passed down through generations, I created Gebal as a place where different worlds of cooking could come together under one roof.
+            </p>
+            <p>
+              My journey took me through different kitchens and traditions. I learned the soul of Italian cooking, where fresh pasta is made by hand and simplicity is treated as an art. I discovered the depth of Sichuan cuisine, where the wok must stay fiercely hot and every spice has its purpose. I returned to the traditions of our own table — Lebanese mezze, Oriental grills, charcoal, and the mixed spices our grandfather once ground by hand.
+            </p>
+            <p>
+              Instead of choosing between them, I brought them together.
+            </p>
+            <p>
+              At Gebal, Lebanese mezze follows recipes that have been carried through three generations. Our Oriental grills are prepared over charcoal, keeping alive the method that has always given them their character. The wok stays hot enough to sear rather than steam, while our pasta is rolled fresh, the way it should be.
+            </p>
+            <p>
+              But Gebal is more than four kitchens or four culinary traditions.
+            </p>
+            <p>
+              It is my interpretation of what a family table has always meant to me: <strong className="text-ink">good food made properly, served warm, and shared generously.</strong>
+            </p>
+            <p>
+              Because in our family, there was always room for one more.
             </p>
           </div>
 
@@ -71,14 +74,14 @@ export default function AboutPage() {
               <div>
                 <h3 className="font-display text-lg text-ink mb-3">Warm hospitality</h3>
                 <p className="text-sm text-stone leading-relaxed">
-                  You&apos;re not a table number. You&apos;re a guest in our home. We want you to feel
+                  You're not a table number. You're a guest in our home. We want you to feel
                   it from the moment you walk in.
                 </p>
               </div>
               <div>
                 <h3 className="font-display text-lg text-ink mb-3">Cultural respect</h3>
                 <p className="text-sm text-stone leading-relaxed">
-                  Each kitchen is run by someone who lived the tradition. We don&apos;t fuse for
+                  Each kitchen is run by someone who lived the tradition. We don't fuse for
                   the sake of it — we let each cuisine speak for itself.
                 </p>
               </div>

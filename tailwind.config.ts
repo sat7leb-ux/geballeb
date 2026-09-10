@@ -26,9 +26,8 @@ const config: Config = {
         bronze: "#8B7355",
       },
       fontFamily: {
-        display: ["Fraunces", "serif"],
+        display: ["Playfair Display", "serif"],
         body: ["Inter", "sans-serif"],
-        accent: ["Cormorant Garamond", "serif"],
       },
       fontSize: {
         "display-xl": ["clamp(3rem, 8vw, 7rem)", { lineHeight: "0.95", letterSpacing: "-0.02em" }],

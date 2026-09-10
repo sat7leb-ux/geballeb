@@ -4,34 +4,24 @@ import { ArrowLeft, Leaf, Flame } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CuisineSwatch from "@/components/CuisineSwatch";
-import { createClient } from "@/lib/supabase/server";
+import { MENU_ITEMS } from "@/lib/menu-data";
 
 export const revalidate = 60;
 
 export default async function DishPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
-  const { data: dish } = await supabase
-    .from("menu_items")
-    .select("*, cuisines(name)")
-    .eq("id", params.id)
-    .single();
+  const dish = MENU_ITEMS.find((item) => item.id === params.id);
 
   if (!dish) notFound();
 
-  const { data: related } = await supabase
-    .from("menu_items")
-    .select("id, name, cuisines(name)")
-    .eq("cuisine_id", (dish as any).cuisine_id)
-    .neq("id", (dish as any).id)
-    .limit(3);
-
-  const d = dish as any;
-  const relatedList = (related as any[]) ?? [];
+  const related = MENU_ITEMS.filter(
+    (item) => item.cuisine === dish.cuisine && item.id !== dish.id
+  ).slice(0, 3);
 
   return (
     <>
       <Header />
 
+      {/* Back link */}
       <div className="pt-24 pb-8 bg-paper">
         <div className="max-w-6xl mx-auto px-6 md:px-10">
           <Link
@@ -43,68 +33,54 @@ export default async function DishPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
+      {/* Dish Detail */}
       <section className="pb-20 bg-paper">
         <div className="max-w-6xl mx-auto px-6 md:px-10">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16">
+            {/* Image */}
             <div className="aspect-square overflow-hidden">
-              <CuisineSwatch cuisine={d.cuisines?.name ?? ""} className="w-full h-full" />
+              <CuisineSwatch cuisine={dish.cuisine ?? ""} className="w-full h-full" />
             </div>
 
+            {/* Details */}
             <div className="flex flex-col justify-center">
               <span className="text-xs text-saffron tracking-[0.2em] uppercase">
-                {d.cuisines?.name}
+                {dish.cuisine}
               </span>
               <h1 className="font-display text-display-sm text-ink mt-4">
-                {d.name}
+                {dish.name}
               </h1>
               <p className="text-2xl text-saffron mt-4 font-display">
-                ${Number(d.price).toFixed(2)}
+                ${Number(dish.price).toFixed(2)}
               </p>
               <p className="text-stone leading-relaxed mt-6">
-                {d.description}
+                {dish.description}
               </p>
 
+              {/* Dietary badges */}
               <div className="flex flex-wrap gap-2 mt-6">
-                {d.is_vegetarian && (
+                {dish.is_vegetarian && (
                   <span className="text-xs px-3 py-1 border border-olive/30 text-olive flex items-center gap-1.5">
                     <Leaf size={12} /> Vegetarian
                   </span>
                 )}
-                {d.is_spicy && (
+                {dish.is_spicy && (
                   <span className="text-xs px-3 py-1 border border-clay/30 text-clay flex items-center gap-1.5">
                     <Flame size={12} /> Spicy
                   </span>
                 )}
               </div>
-
-              <div className="grid grid-cols-2 gap-8 mt-10 pt-8 border-t border-stone/20">
-                <div>
-                  <h3 className="text-xs text-saffron tracking-widest uppercase mb-3">
-                    Ingredients
-                  </h3>
-                  <p className="text-sm text-stone leading-relaxed">
-                    {d.ingredients || "Not specified"}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xs text-saffron tracking-widest uppercase mb-3">
-                    Allergens
-                  </h3>
-                  <p className="text-sm text-stone leading-relaxed">
-                    {d.allergens || "None declared"}
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
 
-          {relatedList.length > 0 && (
+          {/* Related dishes */}
+          {related.length > 0 && (
             <div className="mt-20 pt-12 border-t border-stone/20">
               <h2 className="font-display text-2xl text-ink mb-8">
-                More {d.cuisines?.name}
+                More {dish.cuisine}
               </h2>
               <div className="grid sm:grid-cols-3 gap-6">
-                {relatedList.map((r: any) => (
+                {related.map((r) => (
                   <Link
                     key={r.id}
                     href={`/menu/${r.id}`}
@@ -112,7 +88,7 @@ export default async function DishPage({ params }: { params: { id: string } }) {
                   >
                     <div className="aspect-square overflow-hidden">
                       <CuisineSwatch
-                        cuisine={r.cuisines?.name ?? ""}
+                        cuisine={r.cuisine ?? ""}
                         className="w-full h-full group-hover:scale-105 transition-transform duration-1000 ease-luxury"
                       />
                     </div>

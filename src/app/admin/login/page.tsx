@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -16,15 +15,16 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-      return;
+
+    // Simple auth check - in production, use proper authentication
+    if (email === "admin@gebal.com" && password === "admin123") {
+      localStorage.setItem("gebal_auth", "authenticated");
+      router.push("/admin");
+      router.refresh();
+    } else {
+      setError("Invalid credentials. Use admin@gebal.com / admin123");
     }
-    router.push("/admin");
-    router.refresh();
+    setLoading(false);
   };
 
   return (
@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
       </div>
       <h1 className="font-display text-2xl">Staff sign in</h1>
       <p className="text-xs text-stone mt-2">
-        GEBAL admin dashboard. Uses Supabase Authentication.
+        GEBAL admin dashboard
       </p>
       <form className="mt-8 flex flex-col gap-4" onSubmit={submit}>
         <div>
@@ -66,6 +66,9 @@ export default function AdminLoginPage() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
+      <p className="text-xs text-stone/60 mt-4">
+        Demo credentials: admin@gebal.com / admin123
+      </p>
     </div>
   );
 }

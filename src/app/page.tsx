@@ -96,9 +96,7 @@ export default async function HomePage() {
             Four kitchens that stopped competing
           </h2>
           <p className="text-lg text-stone mt-8 leading-relaxed max-w-2xl mx-auto">
-            Gebal opened because our family couldn&apos;t agree on what kind of restaurant to run.
-            Rather than choose, we built one dining room with four kitchens working side by side —
-            each one honest to its own tradition, all of them sharing the same table.
+            Gebal began with one simple idea: <strong className="text-ink">why choose just one cuisine when a family table can hold them all?</strong> Inspired by a lifelong love of food and by the culinary traditions passed down through generations, I created Gebal as a place where different worlds of cooking could come together under one roof.
           </p>
         </div>
       </section>
@@ -126,19 +124,17 @@ export default async function HomePage() {
                 <span className="text-xs text-saffron tracking-[0.2em] uppercase">Our Story</span>
               </div>
               <h2 className="font-display text-display-md text-ink">
-                A family that never could pick a favorite kitchen
+                A journey through kitchens and traditions
               </h2>
               <div className="mt-8 space-y-5 text-stone leading-relaxed">
                 <p>
-                  One of us trained in a trattoria outside Bologna. Another spent four years in a
-                  Sichuan kitchen learning to keep the numbing heat honest without burying it. A third
-                  never left the grill our grandfather built by hand — the same coals, the same mixed
-                  spice he ground himself.
+                  My journey took me through different kitchens and traditions. I learned the soul of Italian cooking, where fresh pasta is made by hand and simplicity is treated as an art. I discovered the depth of Sichuan cuisine, where the wok must stay fiercely hot and every spice has its purpose. I returned to the traditions of our own table — Lebanese mezze, Oriental grills, charcoal, and the mixed spices our grandfather once ground by hand.
                 </p>
                 <p>
-                  What holds it together isn&apos;t a gimmick — it&apos;s the same instinct that made our
-                  grandmother&apos;s table the one everyone showed up to uninvited: cook it properly, serve
-                  it warm, and always set one extra place.
+                  Instead of choosing between them, I brought them together. At Gebal, Lebanese mezze follows recipes that have been carried through three generations. Our Oriental grills are prepared over charcoal, keeping alive the method that has always given them their character. The wok stays hot enough to sear rather than steam, while our pasta is rolled fresh, the way it should be.
+                </p>
+                <p>
+                  But Gebal is more than four kitchens or four culinary traditions. It is my interpretation of what a family table has always meant to me: <strong className="text-ink">good food made properly, served warm, and shared generously.</strong> Because in our family, there was always room for one more.
                 </p>
               </div>
               <Link
@@ -367,7 +363,7 @@ export default async function HomePage() {
                 <div className="flex items-start gap-4">
                   <Phone size={18} className="text-saffron mt-0.5 flex-shrink-0" />
                   <p className="text-sm text-parchment/80">
-                    {settingsData?.phone || "+961 7 123 456"}
+                    {settingsData?.phone || "+961 76 784 433"}
                   </p>
                 </div>
               </div>

@@ -85,7 +85,7 @@ export default function Footer({ settings }: { settings?: Partial<RestaurantSett
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={14} className="text-saffron/70 flex-shrink-0" />
-                <span>{settings?.phone || "+961 7 123 456"}</span>
+                <span>{settings?.phone || "+961 76 784 433"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={14} className="text-saffron/70 flex-shrink-0" />

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Pencil, CalendarDays, Images, Settings as SettingsIcon, LogOut } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 
 const ITEMS = [
   ["/admin", "Overview", LayoutDashboard],
@@ -18,8 +17,8 @@ export default function AdminSidebar() {
   const router = useRouter();
 
   const logout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    // Clear any stored auth
+    localStorage.removeItem("gebal_auth");
     router.push("/admin/login");
     router.refresh();
   };
