@@ -12,11 +12,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setMounted(true);
   }, []);
 
-  // Only check auth after hydration (client-side)
-  const isAuthenticated = mounted && typeof window !== "undefined" && localStorage.getItem("gebal_auth") === "authenticated";
   const isLoginPage = pathname === "/admin/login";
 
-  // Don't show loading state during SSR or on login page
+  // Always render login page directly
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  // Wait for hydration to check auth
   if (!mounted) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
@@ -25,12 +28,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // On login page, just render children
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
+  // Check auth for other admin pages
+  const isAuthenticated = typeof window !== "undefined" && localStorage.getItem("gebal_auth") === "authenticated";
 
-  // On other admin pages, check auth
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
