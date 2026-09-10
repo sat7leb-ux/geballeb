@@ -6,11 +6,8 @@ import AdminSidebar from "@/components/AdminSidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const isLoginPage = pathname === "/admin/login";
 
@@ -19,8 +16,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <>{children}</>;
   }
 
-  // Wait for hydration to check auth
-  if (!mounted) {
+  useEffect(() => {
+    // Check auth on client side only
+    const auth = localStorage.getItem("gebal_auth");
+    setIsAuthenticated(auth === "authenticated");
+    setAuthChecked(true);
+  }, []);
+
+  // Wait for auth check
+  if (!authChecked) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <p className="text-stone text-sm">Loading…</p>
@@ -28,14 +32,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Check auth for other admin pages
-  const isAuthenticated = typeof window !== "undefined" && localStorage.getItem("gebal_auth") === "authenticated";
-
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/admin/login";
+    }
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="text-center">
-          <p className="text-stone text-sm mb-4">Please log in to access the admin panel.</p>
+          <p className="text-stone text-sm mb-4">Redirecting to login…</p>
           <a href="/admin/login" className="text-sm text-saffron hover:underline">Go to login</a>
         </div>
       </div>

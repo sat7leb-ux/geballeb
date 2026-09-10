@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -9,7 +8,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,11 +16,12 @@ export default function AdminLoginPage() {
 
     if (email === "eliekhachane@gebal.com" && password === "@cc3pt3D2026") {
       localStorage.setItem("gebal_auth", "authenticated");
-      router.push("/admin");
+      // Use window.location to force a full page reload
+      window.location.assign("/admin");
     } else {
-      setError("Invalid email or password. Please try again.");
+      setError("Invalid email or password");
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
